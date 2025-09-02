@@ -10,7 +10,7 @@ import MovieCarousel from "@/components/movies/MovieCarousel";
 import PersonCard from "@/components/movies/PersonCard";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import VideoPlayerDialog from "@/components/video/VideoPlayerDialog";
 
 const DetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -150,27 +150,33 @@ const DetailPage = () => {
         )}
       </div>
 
-      <Dialog open={isPlayerOpen} onOpenChange={setIsPlayerOpen}>
-        <DialogContent className="max-w-4xl p-0 border-0 bg-transparent shadow-none">
-          {videoUrl ? (
-            <video
-              className="w-full h-auto max-h-[90vh] rounded-lg"
-              controls
-              autoPlay
-              src={videoUrl}
-              onError={() => {
-                alert(`⚠️ No se pudo cargar el video: ${videoFilename}`);
-                setIsPlayerOpen(false);
-              }}
-            />
-          ) : (
-            <div className="bg-background text-red-500 text-center py-12 rounded-lg">
-              ❌ No hay video disponible para esta película.<br />
+      {videoUrl && (
+        <VideoPlayerDialog
+          isOpen={isPlayerOpen}
+          onClose={() => setIsPlayerOpen(false)}
+          videoUrl={videoUrl}
+          title={title}
+          poster={item.poster_path ? `${IMAGE_BASE_URL}w500${item.poster_path}` : undefined}
+          movieId={item.id.toString()}
+        />
+      )}
+
+      {!videoUrl && isPlayerOpen && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-background text-red-500 text-center py-12 px-8 rounded-lg max-w-md">
+            <p className="mb-4">❌ No hay video disponible para esta película.</p>
+            <p className="text-sm text-muted-foreground mb-4">
               Agrega el archivo a <code>/movies/</code> y actualiza <code>video-map.json</code>.
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            </p>
+            <button 
+              onClick={() => setIsPlayerOpen(false)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
